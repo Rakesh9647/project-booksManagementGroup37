@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const newDate=new Date()
 
 const ObjectId = mongoose.Schema.Types.ObjectId
 
@@ -53,7 +54,10 @@ const bookSchema = new mongoose.Schema({
   },
   releasedAt: {
     type: Date,
-    required:true
+   // required:true
+   default: `${newDate.getFullYear()}/${newDate.getMonth()}/${newDate.getDate()}`
+
+
     
   },
 },
