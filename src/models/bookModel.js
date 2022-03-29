@@ -9,8 +9,8 @@ const bookSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    trim: true,
-    lowercase:true,
+    trim: true
+  
   },
   excerpt: {
     type: String,
@@ -34,11 +34,11 @@ const bookSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  subcategory: {
+  subcategory: [{
     type: String,
     required: true,
     trim: true
-  },
+  }],
   reviews: {
     type: Number,
     default: 0,
@@ -54,8 +54,8 @@ const bookSchema = new mongoose.Schema({
   },
   releasedAt: {
     type: Date,
-   // required:true
-   default: `${newDate.getFullYear()}/${newDate.getMonth()}/${newDate.getDate()}`
+   required:true
+   
 
 
     

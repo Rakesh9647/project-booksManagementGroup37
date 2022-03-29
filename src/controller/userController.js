@@ -49,11 +49,11 @@ const createUser = async function (req, res) {
             res.status(400).send({ status: false, msg: "Password is mandatory" })
             return
         }
-        if (password.length > 15) {
+        if (password.trim().length > 15) {
             res.status(400).send({ status: false, msg: "Password should be less than 15 characters"})
             return
         }
-        if (password.length < 8) {
+        if (password.trim().length < 8) {
             res.status(400).send({ status: false, msg: "Password should be more than 8 characters"})
             return
         }

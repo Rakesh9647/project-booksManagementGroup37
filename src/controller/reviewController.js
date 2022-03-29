@@ -1,5 +1,8 @@
 const reviewModel = require('../Models/reviewModel');
 
+const bookModel=require("../models/bookModel")
+const mongoose=require("mongoose")
+
 
 
 const isValid = function (value) {
@@ -8,8 +11,13 @@ const isValid = function (value) {
     return true;
 }
  
+const isValidObjectId = function (ObjectId) {
+    return mongoose.Types.ObjectId.isValid(ObjectId)
+  }
 
-
+  const isValidRequestBody = function (data) {
+    return Object.keys(data).length > 0
+  }
 
 const createReview = async function (req, res) {
     try {
