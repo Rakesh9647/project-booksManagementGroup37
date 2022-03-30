@@ -115,11 +115,11 @@ const loginUser=async function(req,res){
         }
         else{
             let token=jwt.sign({userId:userDetails._id,
-                iat:Math.floor(Date.now()/1000),
-                exp:Math.floor(Date.now()/1000)+10*60*60
+                // iat:Math.floor(Date.now()/1000),
+                // exp:Math.floor(Date.now()/1000)+10*60*60
 
-            },"project3-group37-booksmanagement")
-            res.setHeader("x-api-key",token)
+            },"project3-group37-booksmanagement",{expiresIn:"60m"})
+            res.header("x-api-key",token)
             res.status(201).send({status:true,msg:"user login sucessfull",data:token})
 
         }

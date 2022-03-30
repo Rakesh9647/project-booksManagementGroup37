@@ -76,16 +76,20 @@ const isValidRequestBody = function (data) {
       if(!moment(releasedAt, "YYYY-MM-DD").isValid()){
         return res.status(400).send({status:false,msg:"please provide correct dtae month and year in yy-mm-dd"})
       }
-      
-  
+
+   
     
      
   
       let userID = await userModel.findById(userId)
+      console.log(userID)
       if (!userID) {
         return res.status(400).send({ status: false, msg: "please provide right userId" })
       }
-    
+
+    if(req.userId!=data.userId){
+      return res.status(400).send({status:false,msg:"you are not authorized"})
+    }
   
       let  Title= await bookModel.findOne({ title })
       if (Title) {
@@ -199,6 +203,8 @@ const updateBookDetails = async function (req, res) {
       const { title, excerpt, releasedAt, ISBN } = requestBody
       const bookId = req.params.bookId
 
+      
+
       let finalFilter = {}
 
 
@@ -212,6 +218,17 @@ const updateBookDetails = async function (req, res) {
       if (!isValidRequestBody(requestBody)) {
           return res.status(400).send({ status: false, message: "please provide input via body" })
       }
+        
+      const BookId=await bookModel.findById(bookId)
+      if(!BookId){
+        return res.status(400).send({status:false,msg:"this bookid is not exist"})
+      }
+      if(req.userId!=BookId.userId){
+        return res.status(403).send({status:false,msg:"you are not authorized"})
+      }
+   
+       
+
 
       if (isValid(title)) {
 
@@ -221,6 +238,8 @@ const updateBookDetails = async function (req, res) {
               return res.status(400).send({ status: false, message: "title already exists" })
           }
 
+
+
           finalFilter["title"] = title
       }
 
@@ -228,11 +247,9 @@ const updateBookDetails = async function (req, res) {
           finalFilter["excerpt"] = excerpt
       }
       if (isValid(releasedAt)) {
-        const dateRegex = /^\d{4}\-\d{2}\-\d{2}$/;
-
-          if (!dateRegex.test(releasedAt)) {
-              return res.status(400).send({ status: false, message: "please provide releasedAt in YYYY-MM-DD format" })
-          }
+        if(!moment(releasedAt, "YYYY-MM-DD").isValid()){
+          return res.status(400).send({status:false,msg:"please provide correct date month and year in yy-mm-dd"})
+        }
           finalFilter["releasedAt"] = releasedAt
 
       }
@@ -276,6 +293,10 @@ const updateBookDetails = async function (req, res) {
       
           if(!Deletbook){    
             return res.status(404).send({status:false,message:'book not found or already deleted'})
+          }
+
+          if(req.userId!=Deletbook.userId){
+            return res.status(400).send({status:false,message:"you are not authorized"})
           }
       
           
