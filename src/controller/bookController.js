@@ -3,6 +3,7 @@ const userModel = require("../models/userModel");
 const reviewModel = require('../Models/reviewModel');
 const moment=require('moment')
 const mongoose=require("mongoose")
+const ObjectId = require('mongoose').Types.ObjectId
 
 const isValid = function (value) {
     if (typeof value === 'undefined' || value === null) return false
@@ -73,10 +74,11 @@ const isValidRequestBody = function (data) {
         res.status(400).send({ status: false, msg: ' releasedAt is required' })
         return
       }
-      if(!moment(releasedAt, "YYYY-MM-DD").isValid()){
-        return res.status(400).send({status:false,msg:"please provide correct dtae month and year in yy-mm-dd"})
-      }
-
+      // if(!moment(releasedAt, "YYYY-MM-DD").isValid()){
+      //   return res.status(400).send({status:false,msg:"please provide correct dtae month and year in yy-mm-dd"})
+      // }
+      if(!(/^\d{4}[\-\/\s]?((((0[13578])|(true[02]))[\-\/\s]?(([0-2][0-9])|(3[01])))|(((0[469])|(11))[\-\/\s]?(([0-2][0-9])|(30)))|(02[\-\/\s]?[0-2][0-9]))$/.test(releasedAt))){
+         return res.status(400).send({status:false,msg:"released Date is not valid"})}
    
     
      
@@ -117,45 +119,71 @@ const isValidRequestBody = function (data) {
   };
    
 
-  const getAllbooks=async function(req,res){
-      try {
+  // const getAllbooks=async function(req,res){
+  //     try {
       
-          data=req.query
+  //         data=req.query
 
-        let book ={ isDeleted:false }
+  //       let book ={ isDeleted:false }
 
-        if (isValid(data.userId)) {
-          book.userId =data.userId
-        }    
+  //       if (isValid(data.userId)) {
+  //         book.userId =data.userId
+  //       }    
     
-        if (isValid(data.category)) {
-          book.category =data.category
-        }
+  //       if (isValid(data.category)) {
+  //         book.category =data.category
+  //       }
     
-        if (isValid(data.subcategory)) {
-          book.subcategory =data.subcategory
-        }
-        if(data.userId){
+  //       if (isValid(data.subcategory)) {
+  //         book.subcategory =data.subcategory
+  //       }
+  //       if(data.userId){
     
-          if(!isValidObjectId(data.userId)) {      
-            res.status(400).send({status: false, message:"userId is not valid"})
-            return
-           }
+  //         if(!isValidObjectId(data.userId)) {      
+  //           res.status(400).send({status: false, message:"userId is not valid"})
+  //           return
+  //          }
       
-         }
+  //        }
         
        
-        let getbooks=await bookModel.find(book).select({_id:1,excerpt:1,title:1,category:1,subcategory:1,ISBN:1,releasedAt:1,userId:1}).sort({title:1})
+  //       let getbooks=await bookModel.find(book).select({_id:1,excerpt:1,title:1,category:1,subcategory:1,ISBN:1,releasedAt:1,userId:1}).sort({title:1})
 
-          return res.status(200).send({status:true,data:getbooks})
-
-        
-      } catch (error) {
-        return res.status(500).send({status:false,msg:error.message})
+  //         return res.status(200).send({status:true,data:getbooks})
 
         
-      }
-  }
+  //     } catch (error) {
+  //       return res.status(500).send({status:false,msg:error.message})
+
+        
+  //     }
+  // }
+
+
+  const getAllbooks = async function(req,res){
+    try{if(Object.keys(req.query).length == 0){
+        let data = await bookModel.find({isDeleted:false}).collation({locale: "en" }).sort({title:1}).select({title:1,excerpt:1,userId:1,category:1,subcategory:1,releasedAt:1,review:1})
+        if(!data) return res.status(404).send({status:false,msg:"no book found"})
+        return res.status(200).send({status:true,msg:"Books list",data:data})
+    }
+
+    let filterCondition = req.query;
+    let filter = ['userId','category','subcategory']
+    for(let i=0;i<Object.keys(filterCondition).length;i++){
+        if(!filter.includes(Object.keys(filterCondition)[i])){
+            return res.status(400).send({status:false,msg:'wrong filter condition present'})
+        }
+    }
+   if(Object.keys(filterCondition).includes('userId')){ if(!ObjectId.isValid(filterCondition.userId)) return res.status(400).send({status:false,msg:'userId is not valid'})}
+    //  userId validatiion
+    filterCondition.isDeleted = false;
+    let data = await bookModel.find(filterCondition).collation({locale: "en" }).sort({title:1}).select({title:1,excerpt:1,userId:1,category:1,subcategory:1,releasedAt:1,review:1})
+    if(data.length == 0) return res.status(404).send({status:false,msg:"no book found"})
+    return res.status(200).send({status:true,msg:"Book List",data:data})
+}catch(error){
+    return res.status(500).send({status:false,msg:error.message})
+}
+}
 
 
 
@@ -247,9 +275,14 @@ const updateBookDetails = async function (req, res) {
           finalFilter["excerpt"] = excerpt
       }
       if (isValid(releasedAt)) {
-        if(!moment(releasedAt, "YYYY-MM-DD").isValid()){
-          return res.status(400).send({status:false,msg:"please provide correct date month and year in yy-mm-dd"})
-        }
+        // if(!moment(releasedAt, "YYYY-MM-DD").isValid()){
+        //   return res.status(400).send({status:false,msg:"please provide correct date month and year in yy-mm-dd"})
+        // }
+        if(!(/^\d{4}[\-\/\s]?((((0[13578])|(true[02]))[\-\/\s]?(([0-2][0-9])|(3[01])))|(((0[469])|(11))[\-\/\s]?(([0-2][0-9])|(30)))|(02[\-\/\s]?[0-2][0-9]))$/.test(releasedAt))){
+           return res.status(400).send({status:false,msg:"released Date is not valid"})}
+
+
+
           finalFilter["releasedAt"] = releasedAt
 
       }
