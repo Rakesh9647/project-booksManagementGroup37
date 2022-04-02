@@ -53,10 +53,11 @@ const createReview = async function (req, res) {
                 message: "please provide rating"
             })
         }
-
-       if(reviewedBy.trim().length === 0){
-        requestBody["reviewedBy"] = "Guest"
+        if(reviewedBy!=undefined){
+          if(reviewedBy.trim().length === 0){
+              requestBody["reviewedBy"] = "Guest"
        }
+    }
 
 
 
@@ -173,7 +174,7 @@ const updateReview = async function (req, res) {
                 return res.status(400).send({ status: false, message: "please provide correct reviewId and bookId that is related" })
             }
         } else {
-            return res.status(500).send({ status: false, message: "please provide correct reviewId" })
+            return res.status(400).send({ status: false, message: "please provide correct reviewId" })
         }
 
         await reviewModel.updateMany({ _id: reviewId },
